@@ -1,15 +1,23 @@
 package com.module.service.impl;
 
+import com.module.dao.IPharmacyRecordDAO;
+import com.module.dao.impl.PharmacyRecordDAOImpl;
 import com.module.model.PharmacyRecord;
 import com.module.model.RecordEntry;
+import com.module.service.IH2Service;
 import com.module.service.IPharmacyService;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PharmacyServiceImpl implements IPharmacyService {
+
+    IH2Service h2Service=new H2ServiceImpl();
+    IPharmacyRecordDAO pharmacyRecordDAO=new PharmacyRecordDAOImpl();
 
     @Override
     public List<RecordEntry> mapObjectsToRecordEntryList(List<Object> objectList) {
@@ -55,5 +63,21 @@ public class PharmacyServiceImpl implements IPharmacyService {
             pharmacyRecords.add(new PharmacyRecord(memberId, recordList));
         }
         return pharmacyRecords;
+    }
+
+    @Override
+    public boolean mapToH2Database(List<PharmacyRecord> pharmacyRecordList) {
+        try (Connection connection = h2Service.runH2DB()) {
+            if (connection != null && pharmacyRecordDAO.createPharmacyRecord(connection)) {
+                for (PharmacyRecord record : pharmacyRecordList) {
+                    pharmacyRecordDAO.addPharmacyRecordEntry(connection, record);
+                }
+                pharmacyRecordDAO.fetchAllPharmacyRecords(connection);
+                return true;
+            }
+            return false;
+        }catch (SQLException exception){
+            throw new RuntimeException();
+        }
     }
 }

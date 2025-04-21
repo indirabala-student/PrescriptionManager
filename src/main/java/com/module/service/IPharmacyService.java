@@ -10,4 +10,6 @@ public interface IPharmacyService {
     public List<RecordEntry> mapObjectsToRecordEntryList(List<Object> objectList);
 
     public List<PharmacyRecord> mapToPharmacyRecordList(List<RecordEntry> recordEntryList);
+
+    public boolean mapToH2Database(List<PharmacyRecord> pharmacyRecordList);
 }
